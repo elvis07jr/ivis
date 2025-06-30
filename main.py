@@ -7,8 +7,11 @@ from pydantic import BaseModel, Field
 from fastapi.responses import PlainTextResponse
 
 # Import your application-specific modules
+from fastapi import File, UploadFile
+from typing import List # Ensure List is imported
 from app.suggestion_engine import generate_suggestions
 from app.data_models import ColumnDefinition, SuggestionOutput
+from app import dataset_parser # Import the new parser module
 
 app = FastAPI(
     title="iviz API",
@@ -73,6 +76,61 @@ async def get_visualization_ideas(columns: List[ColumnDefinition]):
     except Exception as e:
         logger.error(f"Error during suggestion generation: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="An internal error occurred while generating suggestions.")
+
+# --- New Endpoint for Dataset Upload ---
+@app.post("/upload-dataset/")
+async def handle_dataset_upload(dataset: UploadFile = File(...)):
+    """
+    Accepts a dataset file (CSV or Excel), parses it to infer column definitions.
+    """
+    if not dataset:
+        logger.warning("Upload dataset request received with no file.")
+        raise HTTPException(status_code=400, detail="No dataset file provided.")
+
+    filename = dataset.filename
+    logger.info(f"Received dataset file: {filename}")
+    logger.info(f"Content type: {dataset.content_type}")
+
+    # Basic validation for file type (can be enhanced)
+    allowed_content_types = [
+        "text/csv",
+        "application/vnd.ms-excel", # .xls
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" # .xlsx
+    ]
+    if dataset.content_type not in allowed_content_types:
+        logger.warning(f"Invalid file type uploaded: {filename} ({dataset.content_type})")
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid file type: {dataset.content_type}. Please upload a CSV or Excel file."
+        )
+
+    # Placeholder for parsing logic (to be implemented in next steps)
+    # For now, just acknowledge receipt and filename.
+    # In a real scenario, here you would:
+    # 1. Read dataset.file (it's a SpooledTemporaryFile)
+    # 2. Call a parsing function (e.g., from app.dataset_parser)
+    # 3. Return the list of ColumnDefinition objects
+
+    try:
+        # The file pointer of dataset.file might need to be reset if read multiple times,
+        # but for a single pass to the parser, it should be fine.
+        # dataset.file is a SpooledTemporaryFile.
+        inferred_columns = await dataset_parser.parse_file_to_column_definitions(
+            dataset.file, dataset.filename, dataset.content_type
+        )
+        logger.info(f"Successfully parsed {filename}, inferred {len(inferred_columns)} columns.")
+        if not inferred_columns:
+            logger.warning(f"No columns were inferred from file {filename}. It might be empty or have an unexpected structure.")
+            # Return empty list, frontend can handle this. Or raise HTTPException.
+            # For now, let's allow empty list to be returned.
+        return inferred_columns
+    except ValueError as ve: # Catch parsing errors from our parser
+        logger.error(f"Parsing error for {filename}: {ve}", exc_info=True)
+        raise HTTPException(status_code=400, detail=str(ve))
+    except Exception as e:
+        logger.error(f"Unexpected error processing file {filename}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"An unexpected error occurred while processing the file: {e}")
+
 
 # --- Example of a simple health check endpoint ---
 @app.get("/")

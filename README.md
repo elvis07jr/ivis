@@ -17,8 +17,9 @@ The goal is to help users quickly identify potential insights and analyses they 
 *   **Chart Suggestions**: Recommends appropriate chart types (Bar, Line, Scatter, Histogram, Pie, Box Plot) with basic SVG wireframes.
 *   **Feature Engineering Ideas**: Suggests new features to create from existing columns (e.g., ratios, products, date extractions, aggregations) along with formulas in Excel, SQL, and Pandas.
 *   **Key Metric Cards**: Proposes relevant metrics to track (e.g., totals, averages, unique counts) with formulas and context.
+*   **Dataset Upload (CSV/Excel)**: Allows users to upload their dataset to automatically infer column definitions before generating suggestions (requires T&C agreement).
 *   **Simple API**: Uses FastAPI for a clean and interactive API (via `/docs`).
-*   **Basic Frontend**: Includes an `index.html` for easy interaction with the API.
+*   **Multi-Page Frontend**: Includes a landing page, application page, and pricing page, with a shared static CSS for styling.
 
 ---
 
@@ -138,5 +139,7 @@ The user provides a list of column definitions, including:
 *   `description`: A natural language description of the column.
 *   `semantic_type` (optional): A more specific meaning like Currency, Identifier, etc.
 
-Based on these inputs, the `suggestion_engine.py` applies a set of rules to generate a variety of suggestions. These include SVG wireframes for charts and metric cards, alongside formulas for feature engineering and metric calculations in popular tools like Excel, SQL, and Pandas.
+Alternatively, users can upload a CSV or Excel file on the "App" page. After agreeing to placeholder Terms & Conditions, the system will attempt to parse the file, extract column headers, and make rudimentary inferences for data types and descriptions. These inferred definitions then populate the manual input form for review and modification before generating suggestions.
+
+The `suggestion_engine.py` then applies a set of rules based on the provided or inferred column definitions to generate a variety of suggestions. These include SVG wireframes for charts and metric cards, alongside formulas for feature engineering and metric calculations in popular tools like Excel, SQL, and Pandas.
 ```

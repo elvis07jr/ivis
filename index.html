@@ -10,19 +10,23 @@
     <link rel="stylesheet" href="static/css/style.css">
     <style>
         /* Page-specific styles for index.html (Landing Page) */
+        html, body {
+            height: 100%; /* Ensure html and body take full height for gradient */
+        }
         body {
-            background-color: var(--black);
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%); /* Gradient on body */
+            background-attachment: fixed; /* Makes gradient cover viewport smoothly */
             color: var(--white);
-            font-family: 'JetBrains Mono', monospace; /* Apply JetBrains Mono to the whole page */
+            font-family: 'JetBrains Mono', monospace;
+            margin: 0; /* Already in shared, but good to ensure */
+            padding: 0; /* Already in shared */
         }
 
-        /* Update navbar logo font if it's part of this page's specific feel */
-        /* This is already in static/css/style.css, but if we want to ensure it for this page: */
-        /* .navbar .logo { font-family: 'JetBrains Mono', monospace; } */
-
+        /* .navbar styles are in static/css/style.css - its own background will overlay */
+        /* .footer styles are in static/css/style.css - its own background will overlay */
 
         .hero-section {
-            min-height: 90vh;
+            min-height: 85vh; /* Adjust height, considering nav and footer */
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -30,15 +34,7 @@
             text-align: center;
             padding: 2rem;
             position: relative;
-            overflow: hidden;
-            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%); /* Deep Indigo/Purple to Dark Blue/Purple */
-            /* Alternative: Diagonal to a corner with more colors */
-            /* background: linear-gradient(to bottom right, #020024, #090979, #00d4ff); */
-            /* Alternative: More abstract with radial elements if possible or multiple gradients */
-            /* background:
-                radial-gradient(ellipse at top left, rgba(20,30,90,0.8) 0%, transparent 50%),
-                radial-gradient(ellipse at bottom right, rgba(80,20,100,0.7) 0%, transparent 50%),
-                linear-gradient(120deg, #0A192F 0%, #172A45 100%); */
+            /* No background here, it will inherit from body or be transparent */
         }
 
         .hero-content {
