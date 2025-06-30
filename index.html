@@ -50,6 +50,20 @@
                         <option value="text">Text</option>
                         <option value="boolean">Boolean</option>
                     </select>
+                    <select name="semantic_type">
+                        <option value="">Select Semantic Type (Optional)</option>
+                        <option value="currency">Currency</option>
+                        <option value="percentage">Percentage</option>
+                        <option value="latitude">Latitude</option>
+                        <option value="longitude">Longitude</option>
+                        <option value="country">Country</option>
+                        <option value="city">City</option>
+                        <option value="zip_code">Zip Code</option>
+                        <option value="identifier">Identifier</option>
+                        <option value="rating">Rating</option>
+                        <option value="key_performance_indicator">KPI</option>
+                        <option value="segment">Segment</option>
+                    </select>
                     <textarea placeholder="Description (e.g., Total revenue from a transaction)" name="description" rows="1" required></textarea>
                     <button type="button" class="remove-column" style="display:none;">Remove</button>
                 </div>
@@ -57,6 +71,7 @@
             <button type="button" id="addColumn">Add Another Column</button>
             <br><br>
             <button type="submit" id="generateIdeas">Generate Ideas</button>
+            <span id="loadingIndicator" style="display:none;">Loading...</span>
             <div id="errorMessage" class="error-message"></div>
         </form>
 
@@ -79,8 +94,9 @@
         const resultsDiv = document.getElementById('results');
         const chartSuggestionsDiv = document.getElementById('chartSuggestions');
         const featureEngineeringSuggestionsDiv = document.getElementById('featureEngineeringSuggestions');
-        const metricCardSuggestionsDiv = document.getElementById('metricCardSuggestions'); // <-- NEW
+        const metricCardSuggestionsDiv = document.getElementById('metricCardSuggestions');
         const errorMessageDiv = document.getElementById('errorMessage');
+        const loadingIndicator = document.getElementById('loadingIndicator');
 
         let columnIdCounter = 1;
 
@@ -97,6 +113,20 @@
                     <option value="date">Date</option>
                     <option value="text">Text</option>
                     <option value="boolean">Boolean</option>
+                </select>
+                <select name="semantic_type">
+                    <option value="">Select Semantic Type (Optional)</option>
+                    <option value="currency">Currency</option>
+                    <option value="percentage">Percentage</option>
+                    <option value="latitude">Latitude</option>
+                    <option value="longitude">Longitude</option>
+                    <option value="country">Country</option>
+                    <option value="city">City</option>
+                    <option value="zip_code">Zip Code</option>
+                    <option value="identifier">Identifier</option>
+                    <option value="rating">Rating</option>
+                    <option value="key_performance_indicator">KPI</option>
+                    <option value="segment">Segment</option>
                 </select>
                 <textarea placeholder="Description" name="description" rows="1" required></textarea>
                 <button type="button" class="remove-column">Remove</button>
@@ -137,20 +167,29 @@
             columnInputs.forEach(div => {
                 const name = div.querySelector('input[name="name"]').value.trim();
                 const type = div.querySelector('select[name="data_type"]').value;
+                const semantic_type = div.querySelector('select[name="semantic_type"]').value;
                 const description = div.querySelector('textarea[name="description"]').value.trim();
 
+                const columnEntry = { name, data_type: type, description };
+                if (semantic_type) {
+                    columnEntry.semantic_type = semantic_type;
+                }
+
                 if (name && type && description) {
-                    columnsData.push({ name, data_type: type, description });
+                    columnsData.push(columnEntry);
                 } else {
-                    errorMessageDiv.textContent = 'Please fill out all fields for each column.';
-                    return; // Stop processing
+                    errorMessageDiv.textContent = 'Please fill out Name, Type, and Description for each column.';
+                    throw new Error('Missing required fields.'); // Stop processing by throwing error
                 }
             });
 
-            if (columnsData.length === 0) {
+            if (columnsData.length === 0 && !errorMessageDiv.textContent) { // Check if error already set
                 errorMessageDiv.textContent = 'Please add at least one column.';
                 return;
             }
+            if (errorMessageDiv.textContent) return; // Stop if errors were found
+
+            loadingIndicator.style.display = 'inline'; // Show loading indicator
 
             try {
                 // Ensure this URL matches your FastAPI server (e.g., http://localhost:8000)
@@ -222,13 +261,17 @@
                             </div>
                         `).join('');
 
+                        const wireframeHtml = mc.wireframe && mc.wireframe.svg_data ?
+                            `<div class="wireframe-container">${mc.wireframe.svg_data}</div>` :
+                            '<div class="wireframe-container"><p>(No wireframe available)</p></div>';
+
                         metricCardSuggestionsDiv.innerHTML += `
                             <div class="metric-card-item">
-                                ${_get_generic_svg_wireframe_frontend("Metric Card", mc.title)} <!-- Render generic metric card SVG -->
+                                ${wireframeHtml}
                                 <h4>${mc.title}</h4>
                                 <p><strong>Metric:</strong> ${mc.metric_name}</p>
                                 <p><strong>Calculates:</strong> ${mc.calculation_how_to}</p>
-                                <p><strong>Context:</strong> ${mc.context}</p>
+                                ${mc.context ? `<p><strong>Context:</strong> ${mc.context}</p>` : ''}
                                 <div class="formula-container">
                                     <h5>Formulas:</h5>
                                     ${formulasHtml}
@@ -240,32 +283,15 @@
                     metricCardSuggestionsDiv.innerHTML = '<p>No metric card suggestions found for these columns.</p>';
                 }
 
-
                 resultsDiv.style.display = 'block';
 
             } catch (error) {
                 errorMessageDiv.textContent = `Error: ${error.message}`;
                 console.error('Error fetching suggestions:', error);
+            } finally {
+                loadingIndicator.style.display = 'none'; // Hide loading indicator
             }
         });
-
-        // This is a minimal JS function to render the Metric Card SVG.
-        // It's a simplified version of the _get_generic_svg_wireframe in Python.
-        // In a real app, you'd ideally send the SVG for metric cards from the backend as well.
-        function _get_generic_svg_wireframe_frontend(chart_type, title) {
-            if (chart_type === "Metric Card") {
-                return `
-                <svg width="250" height="100" viewBox="0 0 250 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <rect x="10" y="10" width="230" height="80" rx="8" ry="8" fill="#e9f5ff" stroke="#007bff" stroke-width="1"/>
-                    <text x="25" y="35" font-family="Arial" font-size="12" fill="#555" font-weight="bold">${title}</text>
-                    <text x="125" y="65" font-family="Arial" font-size="28" fill="#007bff" text-anchor="middle" font-weight="bold">$X,XXX</text>
-                    <text x="125" y="85" font-family="Arial" font-size="10" fill="#888" text-anchor="middle">Value Placeholder</text>
-                </svg>
-                `;
-            }
-            // Other chart types are now passed as SVG directly from backend
-            return '';
-        }
 
         // Initialize with one column input
         updateRemoveButtons();
