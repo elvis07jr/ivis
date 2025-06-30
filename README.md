@@ -34,8 +34,13 @@ The goal is to help users quickly identify potential insights and analyses they 
 │   ├── __init__.py
 │   ├── test_main.py
 │   └── test_suggestion_engine.py
+├── static/                 # Static files (CSS, JS, images)
+│   └── css/
+│       └── style.css       # Shared CSS styles
 ├── .gitignore
-├── index.html              # Simple frontend for interacting with the API
+├── app.html                # Main application page (column input & suggestions)
+├── index.html              # Landing page
+├── pricing.html            # Pricing page
 ├── main.py                 # FastAPI application entry point
 ├── README.md               # This file
 └── requirements.txt        # Python dependencies
@@ -67,19 +72,47 @@ The goal is to help users quickly identify potential insights and analyses they 
 
 ## ▶️ Running the Application
 
-1.  **Start the FastAPI server using Uvicorn:**
+The application consists of a FastAPI backend and a set of HTML/CSS/JS frontend files.
+
+1.  **Start the Backend API Server:**
+    Open a terminal, navigate to the project's root directory, and run:
     ```bash
     uvicorn main:app --reload
     ```
-    The `--reload` flag enables auto-reloading when code changes, useful for development.
+    *   This command starts the FastAPI backend server using Uvicorn.
+    *   It typically serves the API at `http://localhost:8000`.
+    *   The `--reload` flag enables auto-reloading on code changes, which is useful for development.
 
-    > **Important CORS Note:** The application is configured with `allow_origins=["*"]` for development convenience, allowing requests from any origin (e.g., when opening `index.html` directly from the filesystem).
-    > **For production, you MUST change this** in `main.py` to a specific list of your frontend domain(s) to prevent unauthorized access.
+    > **Important CORS Note:** The application is configured with `allow_origins=["*"]` in `main.py` for development convenience. This allows requests from any origin (e.g., when opening HTML files directly from the filesystem or using a simple local server on a different port).
+    > **For production deployment, you MUST change this** to a specific list of your frontend domain(s) to prevent unauthorized access.
 
-2.  **Access the API:**
-    *   **API Docs (Swagger UI):** Open your browser to [http://localhost:8000/docs](http://localhost:8000/docs)
-    *   **Alternative API Docs (ReDoc):** Open your browser to [http://localhost:8000/redoc](http://localhost:8000/redoc)
-    *   **Application Page:** Open `app.html` directly in your browser (or serve it via a simple HTTP server). Note that the `fetch` URL in `app.html` is hardcoded to `http://localhost:8000/generate-ideas/`, so the Uvicorn server must be running. (The main entry point will soon be `index.html` - the new landing page).
+2.  **Accessing the Frontend Pages:**
+    The frontend consists of `index.html` (landing page), `app.html` (the main application), and `pricing.html`.
+
+    *   **Direct File Access (Simple Method):**
+        *   **Landing Page:** Open the `index.html` file directly in your web browser (e.g., by double-clicking it or using `File > Open`).
+        *   You can navigate to the "App" (`app.html`) and "Pricing" (`pricing.html`) pages using the navigation bar from the landing page.
+        *   The `app.html` page requires the backend API server (Uvicorn) to be running at `http://localhost:8000` to fetch suggestions.
+
+    *   **Using a Local HTTP Server (Recommended for Development):**
+        For a more robust development experience that better simulates a deployed environment (especially if you add more complex JavaScript or assets), it's recommended to serve the frontend files using a simple local HTTP server.
+        1.  Open another terminal window.
+        2.  Navigate to the project's root directory.
+        3.  Run Python's built-in HTTP server (or any other simple server):
+            ```bash
+            python -m http.server 8080
+            ```
+            (You can use any other available port, e.g., 3000, 5000, if 8080 is taken).
+        4.  Then, access the frontend pages in your browser:
+            *   **Landing Page:** `http://localhost:8080/` or `http://localhost:8080/index.html`
+            *   **Application Page:** `http://localhost:8080/app.html`
+            *   **Pricing Page:** `http://localhost:8080/pricing.html`
+        Remember, the backend API (Uvicorn on port 8000) still needs to be running separately.
+
+3.  **Accessing the API Documentation:**
+    Once the backend server is running, you can access the interactive API documentation:
+    *   **Swagger UI:** [http://localhost:8000/docs](http://localhost:8000/docs)
+    *   **ReDoc:** [http://localhost:8000/redoc](http://localhost:8000/redoc)
 
 ---
 
