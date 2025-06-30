@@ -1,0 +1,168 @@
+/* Shared CSS for iviz application */
+
+:root {
+    --primary-blue: #0D6EFD;
+    --primary-blue-darker: #0B5ED7;
+    --light-gray-bg: #F8F9FA;
+    --medium-gray-border: #DEE2E6;
+    --dark-gray-text: #212529;
+    --medium-gray-text: #6C757D;
+    --white: #FFFFFF;
+    --black: #000000;
+    --navbar-bg: #1A1D20; /* Dark, slightly off-black for navbar */
+    --danger-red: #DC3545;
+    --success-green: #198754;
+    --container-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+    --card-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+/* Basic Body Reset - applied generally, can be overridden by specific page styles */
+body, html {
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.6;
+}
+
+/* --- Navigation Bar --- */
+.navbar {
+    background-color: var(--navbar-bg);
+    padding: 0.75rem 2rem; /* Compact padding */
+    display: flex;
+    justify-content: space-between; /* Logo on left, links on right */
+    align-items: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    position: sticky; /* Sticky nav */
+    top: 0;
+    z-index: 1000; /* Ensure it's above other content */
+}
+.navbar .logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--primary-blue);
+    text-decoration: none;
+}
+.navbar .nav-links {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+}
+.navbar .nav-links li {
+    margin-left: 20px;
+}
+.navbar .nav-links a {
+    color: #E0E0E0; /* Light gray for links */
+    text-decoration: none;
+    font-size: 1rem;
+    font-weight: 500;
+    padding: 0.5rem 0.75rem;
+    border-radius: 4px;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+.navbar .nav-links a:hover,
+.navbar .nav-links a.active {
+    background-color: var(--primary-blue);
+    color: var(--white);
+}
+/* --- End Navigation Bar --- */
+
+
+/* --- Footer --- */
+.footer {
+    color: var(--medium-gray-text);
+    text-align: center;
+    padding: 2rem 1rem; /* Adjusted padding */
+    margin-top: 3rem; /* Default top margin */
+    font-size: 0.9rem;
+    border-top: 1px solid var(--medium-gray-border);
+    background-color: var(--light-gray-bg); /* Consistent light background for footer */
+}
+/* --- End Footer --- */
+
+/* General Button Styles (can be shared if consistent enough) */
+.btn {
+    display: inline-block;
+    font-weight: 500;
+    line-height: 1.5;
+    color: var(--dark-gray-text); /* Default btn text color */
+    text-align: center;
+    vertical-align: middle;
+    cursor: pointer;
+    user-select: none;
+    background-color: transparent;
+    border: 1px solid transparent;
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    border-radius: 0.25rem;
+    text-decoration: none; /* Ensure links styled as buttons don't have underlines */
+    transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+.btn:hover { text-decoration: none; }
+
+.btn-primary {
+    color: var(--white);
+    background-color: var(--primary-blue);
+    border-color: var(--primary-blue);
+}
+.btn-primary:hover {
+    background-color: var(--primary-blue-darker);
+    border-color: var(--primary-blue-darker);
+}
+
+.btn-success {
+    color: var(--white);
+    background-color: var(--success-green);
+    border-color: var(--success-green);
+}
+.btn-success:hover {
+    background-color: #157347; /* Darker green */
+    border-color: #146c43;
+}
+
+.btn-danger { /* Primarily for app.html's remove button */
+    color: var(--white);
+    background-color: var(--danger-red);
+    border-color: var(--danger-red);
+    padding: 0.375rem 0.75rem;
+    font-size: 0.9rem;
+}
+.btn-danger:hover {
+    background-color: #BB2D3B; /* Darker red */
+    border-color: #B02A37;
+}
+
+/* CTA Button style from landing page - can be a specific class or combined */
+.btn-cta { /* For the main landing page button and pricing page buttons */
+    padding: 0.8rem 2rem;
+    font-size: 1.15rem;
+    color: var(--white);
+    background-color: var(--primary-blue);
+    border: none; /* Typically CTA buttons are borderless */
+    border-radius: 5px;
+    font-weight: 500;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    box-shadow: 0 4px 15px rgba(var(--primary-blue-rgb, 13, 110, 253), 0.2); /* Assuming primary-blue-rgb is defined or use direct rgba */
+}
+.btn-cta:hover {
+    background-color: var(--primary-blue-darker);
+    transform: translateY(-2px);
+}
+
+/* Specific CTA for highlighted pricing tier */
+.btn-cta-success {
+    background-color: var(--success-green);
+    box-shadow: 0 4px 15px rgba(var(--success-green-rgb, 25, 135, 84), 0.2); /* Assuming success-green-rgb */
+}
+.btn-cta-success:hover {
+    background-color: #157347; /* Darker green */
+}
+
+/* Basic container class if needed across pages */
+.container {
+    max-width: 1140px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
+}

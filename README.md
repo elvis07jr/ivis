@@ -79,7 +79,7 @@ The goal is to help users quickly identify potential insights and analyses they 
 2.  **Access the API:**
     *   **API Docs (Swagger UI):** Open your browser to [http://localhost:8000/docs](http://localhost:8000/docs)
     *   **Alternative API Docs (ReDoc):** Open your browser to [http://localhost:8000/redoc](http://localhost:8000/redoc)
-    *   **Frontend:** Open `index.html` directly in your browser (or serve it via a simple HTTP server). Note that the `fetch` URL in `index.html` is hardcoded to `http://localhost:8000/generate-ideas/`, so the Uvicorn server must be running.
+    *   **Application Page:** Open `app.html` directly in your browser (or serve it via a simple HTTP server). Note that the `fetch` URL in `app.html` is hardcoded to `http://localhost:8000/generate-ideas/`, so the Uvicorn server must be running. (The main entry point will soon be `index.html` - the new landing page).
 
 ---
 

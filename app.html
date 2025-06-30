@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iviz - Application</title>
+    <link rel="stylesheet" href="static/css/style.css">
+    <style>
+        /* Page-specific styles for app.html */
+        body {
+            background-color: var(--light-gray-bg);
+            color: var(--dark-gray-text);
+            padding-bottom: 40px;
+        }
+        /* .container class is now in style.css */
+        /* H1, H2, H3 styles from shared will apply or can be overridden here if needed */
+        h1 { font-size: 2.2rem; margin-bottom: 1rem; color: var(--primary-blue);}
+        h2 { font-size: 1.8rem; margin-top: 2rem; margin-bottom: 1rem; border-bottom: 1px solid var(--medium-gray-border); padding-bottom: 0.5rem; color: var(--primary-blue);}
+        h3 { font-size: 1.5rem; margin-bottom: 0.75rem; color: var(--primary-blue-darker); }
+
+        .main-app-container { /* Specific container for app content if needed, or use .container */
+            background: var(--white);
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: var(--container-shadow);
+            margin-top: 2rem; /* Space from navbar */
+        }
+
+        .column-input {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 20px;
+            border: 1px solid var(--medium-gray-border);
+            border-radius: 6px;
+            background-color: var(--white);
+        }
+        .column-input input, .column-input select, .column-input textarea {
+            flex: 1;
+            padding: 10px 12px;
+            border: 1px solid var(--medium-gray-border);
+            border-radius: 4px;
+            min-width: 150px;
+            font-size: 0.95rem;
+        }
+        .column-input textarea { min-height: 40px; }
+
+        /* Specific button margins for app.html */
+        button#generateIdeas { margin-top:15px; }
+        button#addColumn { margin-top: 15px; margin-bottom: 10px; }
+
+        .suggestion-section { margin-top: 30px; padding-top: 20px; }
+
+        .suggestion-item {
+            background-color: var(--white);
+            border: 1px solid var(--medium-gray-border);
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 6px;
+            box-shadow: var(--card-shadow);
+        }
+        .suggestion-item h4 {
+            margin-top: 0;
+            color: var(--primary-blue-darker);
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+        .suggestion-item p { margin: 8px 0; font-size: 0.95rem; }
+        .suggestion-item code {
+            background-color: var(--light-gray-bg);
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            font-size: 0.9em;
+            border: 1px solid var(--medium-gray-border);
+        }
+
+        .error-message { color: var(--danger-red); margin-top: 10px; font-weight: 500; }
+
+        .formula-container {
+            background-color: var(--light-gray-bg);
+            border: 1px solid var(--medium-gray-border);
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 5px;
+        }
+        .formula-item { margin-bottom: 8px; }
+        .formula-item strong { color: var(--primary-blue-darker); }
+        .formula-item .context-text { font-size: 0.85em; color: var(--medium-gray-text); margin-top:3px; }
+
+        .metric-card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-top: 0; }
+
+        .metric-card-item {
+            background-color: var(--white);
+            border: 1px solid var(--medium-gray-border);
+            border-radius: 6px;
+            padding: 20px;
+            box-shadow: var(--card-shadow);
+            text-align: left;
+        }
+        .metric-card-item h4 {
+            color: var(--primary-blue-darker);
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 1.15rem;
+        }
+        .metric-card-item p { font-size: 0.9rem; color: var(--medium-gray-text); margin-bottom: 8px; }
+        .metric-card-item svg { max-width: 100%; height: auto; display: block; margin: 10px auto; }
+
+        .wireframe-container { background-color: var(--light-gray-bg); border:1px solid var(--medium-gray-border); padding: 10px; border-radius: 5px; margin-top: 10px; }
+        .wireframe-container svg { display: block; margin: auto; }
+
+        #resultsGrid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Responsive columns */
+            gap: 20px; /* Space between columns and rows */
+            margin-top: 20px;
+        }
+
+        #chartSuggestionsSection,
+        #featureEngineeringSection,
+        #metricCardSection {
+            background-color: #ffffff; /* White background for sections */
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        #metricCardSection .metric-card-grid { /* Adjust if metric cards already have a grid */
+             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Keep card specific grid responsive */
+        }
+
+
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <a href="index.html" class="logo">iviz</a>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="app.html" class="active">App</a></li>
+                <li><a href="pricing.html">Pricing</a></li>
+            </ul>
+        </nav>
+    </header>
+    <div class="container"> <!-- This is the shared centering container -->
+        <div class="main-app-container"> <!-- App-specific styled box -->
+            <h1>iviz - Column Analyzer & Suggestion Tool</h1>
+            <p>Describe your dataset's columns below, and iviz will generate insightful visualization ideas, feature engineering suggestions, and key metrics!</p>
+
+            <h2>1. Describe Your Columns</h2>
+        <form id="columnForm">
+            <div id="columnsContainer">
+                <!-- Initial column input -->
+                <div class="column-input" data-column-id="0">
+                    <input type="text" placeholder="Column Name (e.g., Sales)" name="name" required>
+                    <select name="data_type" required>
+                        <option value="">Select Type</option>
+                        <option value="numerical">Numerical</option>
+                        <option value="categorical">Categorical</option>
+                        <option value="date">Date</option>
+                        <option value="text">Text</option>
+                        <option value="boolean">Boolean</option>
+                    </select>
+                    <select name="semantic_type">
+                        <option value="">Select Semantic Type (Optional)</option>
+                        <option value="currency">Currency</option>
+                        <option value="percentage">Percentage</option>
+                        <option value="latitude">Latitude</option>
+                        <option value="longitude">Longitude</option>
+                        <option value="country">Country</option>
+                        <option value="city">City</option>
+                        <option value="zip_code">Zip Code</option>
+                        <option value="identifier">Identifier</option>
+                        <option value="rating">Rating</option>
+                        <option value="key_performance_indicator">KPI</option>
+                        <option value="segment">Segment</option>
+                    </select>
+                    <textarea placeholder="Description (e.g., Total revenue from a transaction)" name="description" rows="1" required></textarea>
+                    <button type="button" class="remove-column btn btn-danger" style="display:none;">Remove</button>
+                </div>
+            </div>
+            <button type="button" id="addColumn" class="btn btn-success">Add Another Column</button>
+            <br><br>
+            <button type="submit" id="generateIdeas" class="btn btn-primary">Generate Ideas</button>
+            <span id="loadingIndicator" style="display:none; margin-left: 10px;">Loading...</span>
+            <div id="errorMessage" class="error-message"></div>
+        </form>
+
+        <div id="results" class="suggestion-section" style="display: none;">
+            <h2>2. Suggested Ideas</h2>
+            <div id="resultsGrid">
+                <div id="chartSuggestionsSection">
+                    <h3>Chart Suggestions</h3>
+                    <div id="chartSuggestions"></div>
+                </div>
+                <div id="featureEngineeringSection">
+                    <h3>Feature Engineering Ideas</h3>
+                    <div id="featureEngineeringSuggestions"></div>
+                </div>
+                <div id="metricCardSection">
+                    <h3>Key Metric Cards</h3>
+                    <div id="metricCardSuggestions" class="metric-card-grid"></div>
+                </div>
+            </div>
+        </div> <!-- Closing main-app-container -->
+    </div> <!-- Closing container -->
+
+    <footer class="footer">
+        <p>&copy; 2024 iviz. All rights reserved. (Placeholder)</p>
+    </footer>
+
+    <script>
+        const columnsContainer = document.getElementById('columnsContainer');
+        const addColumnBtn = document.getElementById('addColumn');
+        const columnForm = document.getElementById('columnForm');
+        const resultsDiv = document.getElementById('results');
+        const chartSuggestionsDiv = document.getElementById('chartSuggestions');
+        const featureEngineeringSuggestionsDiv = document.getElementById('featureEngineeringSuggestions');
+        const metricCardSuggestionsDiv = document.getElementById('metricCardSuggestions');
+        const errorMessageDiv = document.getElementById('errorMessage');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+
+        let columnIdCounter = 1;
+
+        function addColumnInput() {
+            const newColumnDiv = document.createElement('div');
+            newColumnDiv.className = 'column-input';
+            newColumnDiv.dataset.columnId = columnIdCounter++;
+            newColumnDiv.innerHTML = `
+                <input type="text" placeholder="Column Name" name="name" required>
+                <select name="data_type" required>
+                    <option value="">Select Type</option>
+                    <option value="numerical">Numerical</option>
+                    <option value="categorical">Categorical</option>
+                    <option value="date">Date</option>
+                    <option value="text">Text</option>
+                    <option value="boolean">Boolean</option>
+                </select>
+                <select name="semantic_type">
+                    <option value="">Select Semantic Type (Optional)</option>
+                    <option value="currency">Currency</option>
+                    <option value="percentage">Percentage</option>
+                    <option value="latitude">Latitude</option>
+                    <option value="longitude">Longitude</option>
+                    <option value="country">Country</option>
+                    <option value="city">City</option>
+                    <option value="zip_code">Zip Code</option>
+                    <option value="identifier">Identifier</option>
+                    <option value="rating">Rating</option>
+                    <option value="key_performance_indicator">KPI</option>
+                    <option value="segment">Segment</option>
+                </select>
+                <textarea placeholder="Description" name="description" rows="1" required></textarea>
+                <button type="button" class="remove-column btn btn-danger">Remove</button>
+            `;
+            columnsContainer.appendChild(newColumnDiv);
+            updateRemoveButtons();
+        }
+
+        function updateRemoveButtons() {
+            const removeButtons = document.querySelectorAll('.remove-column');
+            if (removeButtons.length === 1) {
+                removeButtons[0].style.display = 'none'; // Hide if only one column
+            } else {
+                removeButtons.forEach(btn => btn.style.display = 'block');
+            }
+        }
+
+        columnsContainer.addEventListener('click', (event) => {
+            if (event.target.classList.contains('remove-column')) {
+                event.target.closest('.column-input').remove();
+                updateRemoveButtons();
+            }
+        });
+
+        addColumnBtn.addEventListener('click', addColumnInput);
+
+        columnForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            errorMessageDiv.textContent = '';
+            chartSuggestionsDiv.innerHTML = '';
+            featureEngineeringSuggestionsDiv.innerHTML = '';
+            metricCardSuggestionsDiv.innerHTML = ''; // <-- Clear new section
+            resultsDiv.style.display = 'none';
+
+            const columnInputs = document.querySelectorAll('.column-input');
+            const columnsData = [];
+
+            columnInputs.forEach(div => {
+                const name = div.querySelector('input[name="name"]').value.trim();
+                const type = div.querySelector('select[name="data_type"]').value;
+                const semantic_type = div.querySelector('select[name="semantic_type"]').value;
+                const description = div.querySelector('textarea[name="description"]').value.trim();
+
+                const columnEntry = { name, data_type: type, description };
+                if (semantic_type) {
+                    columnEntry.semantic_type = semantic_type;
+                }
+
+                if (name && type && description) {
+                    columnsData.push(columnEntry);
+                } else {
+                    errorMessageDiv.textContent = 'Please fill out Name, Type, and Description for each column.';
+                    throw new Error('Missing required fields.'); // Stop processing by throwing error
+                }
+            });
+
+            if (columnsData.length === 0 && !errorMessageDiv.textContent) { // Check if error already set
+                errorMessageDiv.textContent = 'Please add at least one column.';
+                return;
+            }
+            if (errorMessageDiv.textContent) return; // Stop if errors were found
+
+            loadingIndicator.style.display = 'inline'; // Show loading indicator
+
+            try {
+                // Ensure this URL matches your FastAPI server (e.g., http://localhost:8000)
+                const response = await fetch('http://localhost:8000/generate-ideas/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(columnsData),
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'Failed to generate ideas.');
+                }
+
+                const data = await response.json();
+
+                // --- Display Chart Suggestions ---
+                if (data.chart_suggestions.length > 0) {
+                    data.chart_suggestions.forEach(chart => {
+                        chartSuggestionsDiv.innerHTML += `
+                            <div class="suggestion-item">
+                                <h4>${chart.title} (${chart.chart_type})</h4>
+                                <div class="wireframe-container">${chart.wireframe.svg_data}</div>
+                                <p><strong>Columns:</strong> ${chart.columns_used.join(', ')}</p>
+                                <p><strong>How to:</strong> ${chart.how_to}</p>
+                            </div>
+                        `;
+                    });
+                } else {
+                    chartSuggestionsDiv.innerHTML = '<p>No chart suggestions found for these columns.</p>';
+                }
+
+                // --- Display Feature Engineering Suggestions ---
+                if (data.feature_engineering_suggestions.length > 0) {
+                    data.feature_engineering_suggestions.forEach(fe => {
+                        let formulasHtml = fe.formulas.map(f => `
+                            <div class="formula-item">
+                                <strong>${f.tool}:</strong> <code>${f.formula_string}</code>
+                                ${f.example_data_context ? `<p class="context-text">${f.example_data_context}</p>` : ''}
+                            </div>
+                        `).join('');
+
+                        featureEngineeringSuggestionsDiv.innerHTML += `
+                            <div class="suggestion-item">
+                                <h4>New Feature: ${fe.new_feature_name}</h4>
+                                <p><strong>Description:</strong> ${fe.description}</p>
+                                <p><strong>Involves:</strong> ${fe.columns_involved.join(', ')}</p>
+                                <p><strong>Potential Charts:</strong> ${fe.potential_charts.join(', ')}</p>
+                                <div class="formula-container">
+                                    <h5>Formulas:</h5>
+                                    ${formulasHtml}
+                                </div>
+                            </div>
+                        `;
+                    });
+                } else {
+                    featureEngineeringSuggestionsDiv.innerHTML = '<p>No feature engineering suggestions found for these columns.</p>';
+                }
+
+                // --- Display Metric Card Suggestions --- <-- NEW SECTION
+                if (data.metric_card_suggestions.length > 0) {
+                    data.metric_card_suggestions.forEach(mc => {
+                        let formulasHtml = mc.formulas.map(f => `
+                            <div class="formula-item">
+                                <strong>${f.tool}:</strong> <code>${f.formula_string}</code>
+                                ${f.example_data_context ? `<p class="context-text">${f.example_data_context}</p>` : ''}
+                            </div>
+                        `).join('');
+
+                        const wireframeHtml = mc.wireframe && mc.wireframe.svg_data ?
+                            `<div class="wireframe-container">${mc.wireframe.svg_data}</div>` :
+                            '<div class="wireframe-container"><p>(No wireframe available)</p></div>';
+
+                        metricCardSuggestionsDiv.innerHTML += `
+                            <div class="metric-card-item">
+                                ${wireframeHtml}
+                                <h4>${mc.title}</h4>
+                                <p><strong>Metric:</strong> ${mc.metric_name}</p>
+                                <p><strong>Calculates:</strong> ${mc.calculation_how_to}</p>
+                                ${mc.context ? `<p><strong>Context:</strong> ${mc.context}</p>` : ''}
+                                <div class="formula-container">
+                                    <h5>Formulas:</h5>
+                                    ${formulasHtml}
+                                </div>
+                            </div>
+                        `;
+                    });
+                } else {
+                    metricCardSuggestionsDiv.innerHTML = '<p>No metric card suggestions found for these columns.</p>';
+                }
+
+                resultsDiv.style.display = 'block';
+
+            } catch (error) {
+                errorMessageDiv.textContent = `Error: ${error.message}`;
+                console.error('Error fetching suggestions:', error);
+            } finally {
+                loadingIndicator.style.display = 'none'; // Hide loading indicator
+            }
+        });
+
+        // Initialize with one column input
+        updateRemoveButtons();
+    </script>
+</body>
+</html>
