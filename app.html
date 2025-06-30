@@ -147,9 +147,27 @@
     <div class="container"> <!-- This is the shared centering container -->
         <div class="main-app-container"> <!-- App-specific styled box -->
             <h1>iviz - Column Analyzer & Suggestion Tool</h1>
-            <p>Describe your dataset's columns below, and iviz will generate insightful visualization ideas, feature engineering suggestions, and key metrics!</p>
+            <p>Describe your dataset's columns below, or upload your dataset, and iviz will generate insightful visualization ideas, feature engineering suggestions, and key metrics!</p> <!-- Updated paragraph -->
 
-            <h2>1. Describe Your Columns</h2>
+            <!-- Placeholder for File Upload and T&C -->
+            <div id="uploadSection" style="margin-bottom: 20px; padding: 15px; border: 1px solid var(--medium-gray-border); border-radius: 6px;">
+                <h3>Upload Dataset (CSV or Excel)</h3>
+                <input type="file" id="datasetUpload" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel">
+                <div style="margin-top: 10px;">
+                    <input type="checkbox" id="tocAgreeCheckbox">
+                    <label for="tocAgreeCheckbox">I agree to the <a href="#" id="tocLink">Terms and Conditions</a>.</label>
+                </div>
+                <button id="uploadButton" class="btn btn-primary" style="margin-top:10px;" disabled>Upload & Analyze</button>
+                <div id="tocDisplay" style="display:none; margin-top:15px; padding:10px; border:1px solid #ccc; max-height:200px; overflow-y:auto; background-color:#f9f9f9;">
+                    <h4>Terms and Conditions (Placeholder)</h4>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+                    <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.</p>
+                    <p>Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?</p>
+                </div>
+            </div>
+            <!-- End Placeholder for File Upload and T&C -->
+
+            <h2>1. Describe Your Columns Manually (or review after upload)</h2>
         <form id="columnForm">
             <div id="columnsContainer">
                 <!-- Initial column input -->
@@ -222,7 +240,149 @@
         const errorMessageDiv = document.getElementById('errorMessage');
         const loadingIndicator = document.getElementById('loadingIndicator');
 
+        // New elements for upload and T&C
+        const datasetUploadInput = document.getElementById('datasetUpload');
+        const tocAgreeCheckbox = document.getElementById('tocAgreeCheckbox');
+        const uploadButton = document.getElementById('uploadButton');
+        const tocLink = document.getElementById('tocLink');
+        const tocDisplayDiv = document.getElementById('tocDisplay');
+
         let columnIdCounter = 1;
+
+        // Toggle T&C display
+        if(tocLink && tocDisplayDiv) {
+            tocLink.addEventListener('click', (event) => {
+                event.preventDefault(); // Prevent default anchor behavior
+                tocDisplayDiv.style.display = tocDisplayDiv.style.display === 'none' ? 'block' : 'none';
+            });
+        }
+
+        // Check conditions to enable/disable upload button
+        function checkUploadButtonState() {
+            if (datasetUploadInput && tocAgreeCheckbox && uploadButton) {
+                if (datasetUploadInput.files.length > 0 && tocAgreeCheckbox.checked) {
+                    uploadButton.disabled = false;
+                } else {
+                    uploadButton.disabled = true;
+                }
+            }
+        }
+
+        if(datasetUploadInput) datasetUploadInput.addEventListener('change', checkUploadButtonState);
+        if(tocAgreeCheckbox) tocAgreeCheckbox.addEventListener('change', checkUploadButtonState);
+
+        // Handle dataset upload button click
+        if(uploadButton) {
+            uploadButton.addEventListener('click', async () => {
+                if (!datasetUploadInput || datasetUploadInput.files.length === 0) {
+                    alert('Please select a dataset file.');
+                    return;
+                }
+                if (!tocAgreeCheckbox || !tocAgreeCheckbox.checked) {
+                    alert('Please agree to the Terms and Conditions.');
+                    return;
+                }
+
+                const file = datasetUploadInput.files[0];
+                console.log('Selected file:', file.name, file.type, file.size);
+                // alert(`File selected: ${file.name}. Backend upload functionality will be implemented in a later step.`); // Remove this alert
+
+                const formData = new FormData();
+                formData.append('dataset', file); // "dataset" must match the parameter name in FastAPI endpoint
+
+                errorMessageDiv.textContent = ''; // Clear previous errors
+                resultsDiv.style.display = 'none'; // Hide previous results
+
+                try {
+                    loadingIndicator.style.display = 'inline';
+                    const response = await fetch('/upload-dataset/', {
+                        method: 'POST',
+                        body: formData,
+                        // Headers are not strictly needed for FormData by default, browser sets multipart/form-data
+                    });
+
+                    if (!response.ok) {
+                        let errorDetail = `HTTP error! status: ${response.status}`;
+                        try {
+                            const errorData = await response.json();
+                            errorDetail = errorData.detail || errorDetail;
+                        } catch (e) {
+                            // If response is not JSON, use the status text or default message
+                            errorDetail = response.statusText || errorDetail;
+                        }
+                        throw new Error(errorDetail);
+                    }
+
+                    const inferredColumns = await response.json();
+                    loadingIndicator.style.display = 'none';
+
+                    if (inferredColumns && inferredColumns.length > 0) {
+                        populateColumnForm(inferredColumns);
+                        // Consider a less intrusive notification than alert here if preferred
+                        errorMessageDiv.textContent = 'Dataset processed! Review the inferred column definitions below.';
+                        errorMessageDiv.style.color = 'var(--success-green, #198754)'; // Success message style
+                    } else {
+                        errorMessageDiv.textContent = 'Dataset processed, but no columns were inferred or the file might be empty/unsuitable. Please define columns manually or try a different file.';
+                        errorMessageDiv.style.color = 'var(--medium-gray-text, #6C757D)'; // Neutral message style
+                        columnsContainer.innerHTML = '';
+                        addColumnInput();
+                    }
+
+                } catch (error) {
+                    loadingIndicator.style.display = 'none';
+                    errorMessageDiv.textContent = `Upload Error: ${error.message}`;
+                    errorMessageDiv.style.color = 'var(--danger-red, #DC3545)'; // Error message style
+                    console.error('Upload Error:', error);
+                }
+            });
+        }
+
+        function populateColumnForm(columns) {
+            columnsContainer.innerHTML = ''; // Clear existing rows
+            columnIdCounter = 0; // Reset counter
+
+            if (columns.length === 0) { // Add a blank row if no columns inferred but still want to show the form
+                addColumnInput();
+                return;
+            }
+
+            columns.forEach(colData => {
+                const newColumnDiv = document.createElement('div');
+                newColumnDiv.className = 'column-input';
+                newColumnDiv.dataset.columnId = columnIdCounter++;
+
+                newColumnDiv.innerHTML = `
+                    <input type="text" placeholder="Column Name" name="name" value="${colData.name || ''}" required>
+                    <select name="data_type" required>
+                        <option value="">Select Type</option>
+                        <option value="numerical" ${colData.data_type === 'numerical' ? 'selected' : ''}>Numerical</option>
+                        <option value="categorical" ${colData.data_type === 'categorical' ? 'selected' : ''}>Categorical</option>
+                        <option value="date" ${colData.data_type === 'date' ? 'selected' : ''}>Date</option>
+                        <option value="text" ${colData.data_type === 'text' ? 'selected' : ''}>Text</option>
+                        <option value="boolean" ${colData.data_type === 'boolean' ? 'selected' : ''}>Boolean</option>
+                    </select>
+                    <select name="semantic_type">
+                        <option value="">Select Semantic Type (Optional)</option>
+                        <option value="currency" ${colData.semantic_type === 'currency' ? 'selected' : ''}>Currency</option>
+                        <option value="percentage" ${colData.semantic_type === 'percentage' ? 'selected' : ''}>Percentage</option>
+                        <option value="latitude" ${colData.semantic_type === 'latitude' ? 'selected' : ''}>Latitude</option>
+                        <option value="longitude" ${colData.semantic_type === 'longitude' ? 'selected' : ''}>Longitude</option>
+                        <option value="country" ${colData.semantic_type === 'country' ? 'selected' : ''}>Country</option>
+                        <option value="city" ${colData.semantic_type === 'city' ? 'selected' : ''}>City</option>
+                        <option value="zip_code" ${colData.semantic_type === 'zip_code' ? 'selected' : ''}>Zip Code</option>
+                        <option value="identifier" ${colData.semantic_type === 'identifier' ? 'selected' : ''}>Identifier</option>
+                        <option value="rating" ${colData.semantic_type === 'rating' ? 'selected' : ''}>Rating</option>
+                        <option value="key_performance_indicator" ${colData.semantic_type === 'key_performance_indicator' ? 'selected' : ''}>KPI</option>
+                        <option value="segment" ${colData.semantic_type === 'segment' ? 'selected' : ''}>Segment</option>
+                    </select>
+                    <textarea placeholder="Description" name="description" rows="1" required>${colData.description || ''}</textarea>
+                    <button type="button" class="remove-column btn btn-danger">Remove</button>
+                `;
+                columnsContainer.appendChild(newColumnDiv);
+            });
+            updateRemoveButtons(); // Ensure remove buttons are correctly shown/hidden
+        }
+
 
         function addColumnInput() {
             const newColumnDiv = document.createElement('div');
