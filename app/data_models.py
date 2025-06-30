@@ -14,6 +14,10 @@ class ColumnDefinition(BaseModel):
     description: str = Field(
         ..., description="A brief description of what the column represents (e.g., 'Total revenue from a transaction', 'Unique identifier for a customer')."
     )
+    semantic_type: Optional[Literal[
+        "currency", "percentage", "latitude", "longitude", "country", "city", "zip_code",
+        "identifier", "rating", "key_performance_indicator", "segment"
+    ]] = Field(None, description="The specific semantic meaning of the column (e.g., 'currency', 'identifier').")
 
 # --- Output Models ---
 
@@ -72,6 +76,7 @@ class MetricCardSuggestion(BaseModel):
     context: Optional[str] = Field(
         None, description="Context or interpretation for the metric (e.g., 'Displays overall sales performance')."
     )
+    wireframe: Optional[ChartWireframe] = Field(None, description="Optional SVG wireframe for the metric card.")
 
 class SuggestionOutput(BaseModel):
     """
